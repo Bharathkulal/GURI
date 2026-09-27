@@ -3,17 +3,30 @@ import React, { useState, useEffect } from "react";
 import SparklesPreview from "@/components/sparkles-demo";
 import LandingPage from "@/components/landing-page";
 import { motion, AnimatePresence } from "motion/react";
+import { getSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
   const [loading, setLoading] = useState(true);
 
+  const router = useRouter();
+
   useEffect(() => {
+    let isAuth = false;
+    getSession().then((session) => {
+      if (session) isAuth = true;
+    });
+
     // Show loading screen for 4 seconds
     const timer = setTimeout(() => {
-      setLoading(false);
+      if (isAuth) {
+        router.push("/dashboard");
+      } else {
+        setLoading(false);
+      }
     }, 4000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [router]);
 
   return (
     <main className="min-h-screen bg-black">

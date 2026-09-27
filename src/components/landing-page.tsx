@@ -18,6 +18,8 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
+import Image from "next/image";
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -39,7 +41,10 @@ const Navbar = () => {
       )}
     >
       <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between">
-        <div className="font-bold text-2xl tracking-tight text-white">GURI</div>
+        <Link href="/" className="flex items-center space-x-2">
+          <Image src="/logo.png" alt="GURI Logo" width={32} height={32} className="rounded-md" />
+          <div className="font-bold text-2xl tracking-tight text-white">GURI</div>
+        </Link>
         
         {/* Desktop Nav */}
         <div className="hidden md:flex items-center space-x-8 text-sm font-medium text-neutral-300">
@@ -50,10 +55,10 @@ const Navbar = () => {
         </div>
         
         <div className="hidden md:flex items-center space-x-6">
-          <button className="text-sm font-medium text-neutral-300 hover:text-white transition-colors">Login</button>
-          <button className="bg-white text-black px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-neutral-200 transition-colors">
+          <Link href="/login" className="text-sm font-medium text-neutral-300 hover:text-white transition-colors">Login</Link>
+          <Link href="/login" className="bg-white text-black px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-neutral-200 transition-colors inline-block">
             Get Started
-          </button>
+          </Link>
         </div>
 
         {/* Mobile Toggle */}
@@ -73,8 +78,8 @@ const Navbar = () => {
           <a href="#ai-coach" className="text-neutral-300 font-medium" onClick={() => setMobileMenuOpen(false)}>AI Coach</a>
           <a href="#pricing" className="text-neutral-300 font-medium" onClick={() => setMobileMenuOpen(false)}>Pricing</a>
           <div className="pt-4 flex flex-col space-y-3">
-            <button className="text-neutral-300 font-medium text-left">Login</button>
-            <button className="bg-white text-black px-5 py-3 rounded-md font-semibold text-center">Get Started</button>
+            <Link href="/login" className="text-neutral-300 font-medium text-left">Login</Link>
+            <Link href="/login" className="bg-white text-black px-5 py-3 rounded-md font-semibold text-center block">Get Started</Link>
           </div>
         </div>
       )}
@@ -128,12 +133,12 @@ export default function LandingPage() {
             transition={{ duration: 0.5, delay: 0.3 }}
             className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6 mb-8"
           >
-            <button className="w-full sm:w-auto bg-white text-black px-8 py-4 rounded-full font-semibold hover:bg-neutral-200 transition-colors flex items-center justify-center">
+            <Link href="/login" className="w-full sm:w-auto bg-white text-black px-8 py-4 rounded-full font-semibold hover:bg-neutral-200 transition-colors flex items-center justify-center">
               Start Your Journey <ChevronRight className="ml-2" size={18} />
-            </button>
-            <button className="w-full sm:w-auto bg-neutral-900 text-white border border-neutral-800 px-8 py-4 rounded-full font-semibold hover:bg-neutral-800 transition-colors">
+            </Link>
+            <Link href="/login" className="w-full sm:w-auto bg-neutral-900 text-white border border-neutral-800 px-8 py-4 rounded-full font-semibold hover:bg-neutral-800 transition-colors text-center inline-block">
               Explore Roadmaps
-            </button>
+            </Link>
           </motion.div>
 
           <motion.p 
@@ -296,9 +301,9 @@ export default function LandingPage() {
                   ))}
                 </div>
                 
-                <button className="w-full py-3 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-white font-medium transition-colors border border-neutral-800">
+                <Link href="/login" className="w-full py-3 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-white font-medium transition-colors border border-neutral-800 text-center block">
                   View Roadmap &rarr;
-                </button>
+                </Link>
               </div>
             ))}
           </div>
@@ -408,9 +413,9 @@ export default function LandingPage() {
                 <li className="flex items-center"><CheckCircle2 size={18} className="text-neutral-500 mr-3"/> Skill-gap identification</li>
               </ul>
               
-              <button className="text-white font-medium inline-flex items-center hover:text-neutral-300 transition-colors">
+              <Link href="/login" className="text-white font-medium inline-flex items-center hover:text-neutral-300 transition-colors">
                 Build Your Career Path <ChevronRight size={18} className="ml-1" />
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -440,9 +445,9 @@ export default function LandingPage() {
               <li className="flex items-center"><CheckCircle2 size={16} className="text-white mr-3"/> Career preparation</li>
             </ul>
             
-            <button className="w-full bg-white text-black font-semibold py-4 rounded-xl hover:bg-neutral-200 transition-colors">
+            <Link href="/login" className="w-full bg-white text-black font-semibold py-4 rounded-xl hover:bg-neutral-200 transition-colors block text-center">
               Start for ₹100/month
-            </button>
+            </Link>
           </div>
         </div>
       </section>
@@ -457,9 +462,9 @@ export default function LandingPage() {
           <p className="text-xl text-neutral-400 mb-12">
             Choose your goal. Follow your roadmap. Build your future with GURI.
           </p>
-          <button className="bg-white text-black px-10 py-5 rounded-full font-bold text-lg hover:bg-neutral-200 transition-colors inline-flex items-center shadow-[0_0_40px_rgba(255,255,255,0.1)]">
+          <Link href="/login" className="bg-white text-black px-10 py-5 rounded-full font-bold text-lg hover:bg-neutral-200 transition-colors inline-flex items-center shadow-[0_0_40px_rgba(255,255,255,0.1)]">
             Start Your Journey <ChevronRight className="ml-2" size={20} />
-          </button>
+          </Link>
         </div>
       </section>
 
@@ -467,7 +472,10 @@ export default function LandingPage() {
       <footer className="bg-neutral-950 py-16 px-6 border-t border-neutral-900">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12">
           <div className="md:col-span-2">
-            <div className="font-bold text-2xl tracking-tight text-white mb-4">GURI</div>
+            <Link href="/" className="flex items-center space-x-2 mb-4">
+              <Image src="/logo.png" alt="GURI Logo" width={32} height={32} className="rounded-md" />
+              <div className="font-bold text-2xl tracking-tight text-white">GURI</div>
+            </Link>
             <p className="text-neutral-500 text-sm max-w-sm">
               Your goal. Your roadmap. Your journey.<br/>
               An AI-powered career learning platform designed for college students.
