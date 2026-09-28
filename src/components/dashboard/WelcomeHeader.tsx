@@ -21,7 +21,7 @@ export default function WelcomeHeader({ name, goal, progress }: { name: string, 
             <span className="text-sm font-semibold text-white">{progress}%</span>
           </div>
           <div className="w-48 h-2 bg-neutral-800 rounded-full overflow-hidden">
-            <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${progress}%` }}></div>
+            <div className="h-full bg-emerald-500 rounded-full" style={{ width: `\${progress}%` }}></div>
           </div>
         </div>
       </div>

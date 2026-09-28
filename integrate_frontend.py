@@ -1,4 +1,11 @@
-import { auth } from '@/auth';
+import os
+from pathlib import Path
+
+def update_components(base_path: str):
+    base = Path(base_path)
+    
+    components = {
+        "src/app/dashboard/page.tsx": """import { auth } from '@/auth';
 import { fetchDashboard } from '@/services/api';
 import WelcomeHeader from '@/components/dashboard/WelcomeHeader';
 import ContinueLearning from '@/components/dashboard/ContinueLearning';
@@ -59,3 +66,14 @@ export default async function DashboardPage() {
     </div>
   );
 }
+"""
+    }
+    
+    for filepath, content in components.items():
+        with open(base / filepath, "w") as f:
+            f.write(content)
+            
+    print("Frontend components updated for integration")
+
+if __name__ == "__main__":
+    update_components("d:/GURI")

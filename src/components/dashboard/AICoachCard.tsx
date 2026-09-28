@@ -1,6 +1,7 @@
 import { Sparkles } from 'lucide-react';
 
-export default function AICoachCard() {
+export default function AICoachCard({ recommendation }: { recommendation?: any }) {
+  if (!recommendation) return null;
   return (
     <section>
       <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
@@ -13,15 +14,12 @@ export default function AICoachCard() {
         
         <div className="relative z-10">
           <p className="text-neutral-400 text-sm mb-4">
-            You completed 3 Machine Learning lessons this week. Excellent pace!
+            {recommendation.reason}
           </p>
           
           <div className="bg-black/40 backdrop-blur-md rounded-xl p-4 border border-white/5 mb-6">
             <div className="text-xs font-semibold text-emerald-400 uppercase tracking-wide mb-1">Next Recommended Step</div>
-            <h3 className="text-lg font-bold text-white mb-2">Decision Trees</h3>
-            <p className="text-sm text-neutral-400 leading-relaxed">
-              You have mastered the fundamentals of supervised learning and are fully prepared for tree-based models.
-            </p>
+            <h3 className="text-lg font-bold text-white mb-2">{recommendation.title}</h3>
           </div>
 
           <button className="w-full bg-emerald-500 text-black font-semibold py-3 rounded-xl hover:bg-emerald-400 transition-colors flex items-center justify-center shadow-lg">

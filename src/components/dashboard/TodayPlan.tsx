@@ -1,14 +1,10 @@
 import { CheckCircle2, Circle, PlayCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const planItems = [
-  { title: 'Review Python fundamentals', duration: '20 min', status: 'done' },
-  { title: 'Learn Linear Regression', duration: '45 min', status: 'current' },
-  { title: 'Complete ML practice quiz', duration: '15 min', status: 'pending' },
-  { title: 'Build mini prediction model', duration: '60 min', status: 'pending' },
-];
+export default function TodayPlan({ plan }: { plan?: any[] }) {
+  const planItems = plan || [];
+  if (planItems.length === 0) return null;
 
-export default function TodayPlan() {
   return (
     <section>
       <div className="flex items-center justify-between mb-4">
@@ -39,11 +35,6 @@ export default function TodayPlan() {
             
             <div className="flex items-center gap-4">
               <span className="text-xs sm:text-sm font-medium text-neutral-500">{item.duration}</span>
-              {item.status === 'current' && (
-                <button className="hidden sm:block text-xs font-semibold text-black bg-emerald-500 px-3 py-1.5 rounded-lg hover:bg-emerald-400 transition-colors">
-                  Start
-                </button>
-              )}
             </div>
           </div>
         ))}

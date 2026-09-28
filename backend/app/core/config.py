@@ -6,10 +6,10 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     CORS_ORIGINS: List[str] = ["http://localhost:3000"]
     
-    DATABASE_URL: str
-    SUPABASE_URL: str
-    SUPABASE_ANON_KEY: str
-    SUPABASE_SERVICE_ROLE_KEY: str
+    MONGODB_URI: str = "mongodb://localhost:27017"
+    MONGODB_DATABASE: str = "guri"
+    
+    FRONTEND_URL: str = "http://localhost:3000"
     
     AI_PROVIDER: str = "gemini"
     AI_API_KEY: str = ""
