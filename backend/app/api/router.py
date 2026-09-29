@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.routes import auth, users, dashboard, roadmaps, lessons, quizzes, projects, skills, progress, ai
+from app.api.routes import auth, users, dashboard, roadmaps, lessons, quizzes, projects, skills, progress, ai, topics
 
 api_router = APIRouter()
 api_router.include_router(users.router, prefix="/users", tags=["users"])
@@ -10,3 +10,4 @@ api_router.include_router(quizzes.router, prefix="/quizzes", tags=["quizzes"])
 api_router.include_router(projects.router, prefix="/projects", tags=["projects"])
 api_router.include_router(skills.router, prefix="/skills", tags=["skills"])
 api_router.include_router(ai.router, prefix="/ai", tags=["ai"])
+api_router.include_router(topics.router, prefix="/topics", tags=["topics"])
