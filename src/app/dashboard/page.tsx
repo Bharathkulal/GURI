@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import Link from 'next/link';
 import { auth } from '@/auth';
 import { fetchDashboard } from '@/services/api';
 import WelcomeHeader from '@/components/dashboard/WelcomeHeader';
@@ -52,7 +53,9 @@ async function DashboardContent({ session }: { session: any }) {
         <div className="p-8 border border-white/10 rounded-2xl bg-[#121212] flex flex-col items-center justify-center text-center space-y-4">
            <h3 className="text-xl font-medium text-white">Start your learning journey</h3>
            <p className="text-gray-400">Choose a roadmap to begin.</p>
-           <button className="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition-colors">Explore Roadmaps →</button>
+           <Link href="/dashboard/learn">
+             <button className="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition-colors">Explore Roadmaps →</button>
+           </Link>
         </div>
       )}
 
