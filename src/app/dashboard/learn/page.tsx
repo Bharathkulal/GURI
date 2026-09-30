@@ -58,7 +58,7 @@ export default function LearnPage() {
   return (
     <div className="p-8 max-w-6xl mx-auto space-y-8">
       <div className="space-y-4">
-        <h1 className="text-4xl font-bold tracking-tight">LEARN</h1>
+        <h1 className="text-4xl font-bold tracking-tight text-white">LEARN</h1>
         <p className="text-zinc-400 text-lg">Explore concepts, skills and technologies.</p>
       </div>
       
@@ -100,7 +100,7 @@ export default function LearnPage() {
           placeholder="Search concepts, skills or topics..." 
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-6 py-4 text-lg focus:outline-none focus:ring-1 focus:ring-green-500 transition-all"
+          className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-6 py-4 text-lg text-white placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-green-500 transition-all"
         />
       </div>
 
@@ -124,7 +124,7 @@ export default function LearnPage() {
         <div className="text-center py-20 text-zinc-500">Loading topics...</div>
       ) : filteredTopics.length === 0 ? (
         <div className="text-center py-20 text-zinc-500 border border-zinc-800/50 rounded-2xl">
-          <p className="text-lg">No results found</p>
+          <p className="text-lg text-zinc-300">No results found</p>
           <p className="text-sm mt-2">Try adjusting your search or category filter.</p>
         </div>
       ) : (
@@ -139,7 +139,7 @@ export default function LearnPage() {
               <Link href={`/dashboard/learn/${topic.id}`}>
                 <div className="group border border-zinc-800 bg-zinc-900/50 p-6 rounded-2xl hover:border-green-500/50 transition-all duration-300 h-full flex flex-col cursor-pointer">
                   <div className="text-xs text-green-500 mb-3 font-mono tracking-wider uppercase">{topic.category}</div>
-                  <h3 className="text-xl font-bold mb-2 group-hover:text-green-400 transition-colors">{topic.name}</h3>
+                  <h3 className="text-xl font-bold mb-2 text-white group-hover:text-green-400 transition-colors">{topic.name}</h3>
                   <p className="text-zinc-400 text-sm mb-6 flex-grow">{topic.description}</p>
                   
                   <div className="flex items-center justify-between text-xs text-zinc-500">
