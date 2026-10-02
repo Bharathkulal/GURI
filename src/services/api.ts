@@ -90,3 +90,44 @@ export async function fetchContinueLearning(token: string) {
   if (!res.ok) throw new Error("Failed to fetch continue learning");
   return res.json();
 }
+
+export async function fetchProjects(params?: { category?: string, difficulty?: string, q?: string }, token?: string) {
+  const searchParams = new URLSearchParams();
+  if (params?.category) searchParams.append('category', params.category);
+  if (params?.difficulty) searchParams.append('difficulty', params.difficulty);
+  if (params?.q) searchParams.append('q', params.q);
+  const res = await fetch(`${API_URL}/projects?${searchParams.toString()}`);
+  if (!res.ok) throw new Error('Failed to fetch projects');
+  return res.json();
+}
+
+export async function fetchRecommendedProjects(token: string) {
+  const res = await fetch(`${API_URL}/projects/recommended`, { headers: { Authorization: `Bearer ${token}` } });
+  if (!res.ok) throw new Error('Failed to fetch recommended projects');
+  return res.json();
+}
+
+export async function fetchMyProjects(token: string) {
+  const res = await fetch(`${API_URL}/projects/my`, { headers: { Authorization: `Bearer ${token}` } });
+  if (!res.ok) throw new Error('Failed to fetch my projects');
+  return res.json();
+}
+
+export async function toggleSaveProject(projectId: string, save: boolean, token: string) {
+  const res = await fetch(`${API_URL}/projects/${projectId}/save`, {
+    method: save ? 'POST' : 'DELETE',
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  if (!res.ok) throw new Error('Failed to toggle save project');
+  return res.json();
+}
+
+export async function startProject(projectId: string, token: string) {
+  const res = await fetch(`${API_URL}/projects/${projectId}/start`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  if (!res.ok) throw new Error('Failed to start project');
+  return res.json();
+}
+
