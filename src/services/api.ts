@@ -131,3 +131,32 @@ export async function startProject(projectId: string, token: string) {
   return res.json();
 }
 
+export async function askAICoachChat(payload: { message: string, conversation_id?: string, mode?: string, context?: any }, token: string) {
+  const res = await fetch(`${API_URL}/ai/chat`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) throw new Error('Failed to send AI message');
+  return res.json();
+}
+
+export async function fetchAIConversations(token: string) {
+  const res = await fetch(`${API_URL}/ai/conversations`, { headers: { Authorization: `Bearer ${token}` } });
+  if (!res.ok) throw new Error('Failed to fetch AI conversations');
+  return res.json();
+}
+
+export async function fetchAIConversation(conversationId: string, token: string) {
+  const res = await fetch(`${API_URL}/ai/conversations/${conversationId}`, { headers: { Authorization: `Bearer ${token}` } });
+  if (!res.ok) throw new Error('Failed to fetch AI conversation');
+  return res.json();
+}
+
+export async function fetchAISnapshot(token: string) {
+  const res = await fetch(`${API_URL}/ai/snapshot`, { headers: { Authorization: `Bearer ${token}` } });
+  if (!res.ok) throw new Error('Failed to fetch AI snapshot');
+  return res.json();
+}
+
+
