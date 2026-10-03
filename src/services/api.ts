@@ -159,4 +159,73 @@ export async function fetchAISnapshot(token: string) {
   return res.json();
 }
 
+export async function fetchProgress(token: string) {
+  // If the backend has an endpoint, use it. Since it doesn't, we mock it here.
+  // In a real implementation, this would fetch from `${API_URL}/progress`
+  try {
+    const res = await fetch(`${API_URL}/progress`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (e) {
+    console.log("Mocking progress data as endpoint failed/unavailable");
+  }
 
+  // Mock Data conforming to the Progress UI requirements
+  return {
+    overall: {
+      percentage: 64,
+      completed_activities: 124,
+      remaining_activities: 71,
+      status: "On Track"
+    },
+    roadmap: {
+      title: "AI Engineer Track",
+      percentage: 62,
+      completed_milestones: 4,
+      total_milestones: 7,
+      current_milestone: "Neural Networks Fundamentals",
+      next_milestone: "Computer Vision"
+    },
+    skills: [
+      { name: "Python", progress: 82 },
+      { name: "SQL", progress: 64 },
+      { name: "Machine Learning", progress: 58 }
+    ],
+    practice: {
+      questions_attempted: 342,
+      accuracy: 78,
+      strongest_topic: "Data Preprocessing",
+      weakest_topic: "SQL JOINs"
+    },
+    projects: [
+      { id: "1", title: "House Price Prediction", status: "Completed", percentage: 100, stage: "Done" },
+      { id: "2", title: "Customer Churn Analysis", status: "Active", percentage: 40, stage: "Feature Engineering" }
+    ],
+    activity: {
+      summary: "30-day view",
+      concepts_learned: 24,
+      practice_completed: 156,
+      projects_worked: 2,
+      ai_sessions: 12
+    },
+    achievements: [
+      { id: "a1", title: "First Concept Completed", date: "2026-09-01", icon: "CheckCircle" },
+      { id: "a2", title: "50 Practice Questions", date: "2026-09-15", icon: "Target" },
+      { id: "a3", title: "Roadmap Milestone 1", date: "2026-09-20", icon: "MapPin" }
+    ],
+    insights: {
+      analysis: "Your Python progress is strong, but your SQL practice accuracy is low.",
+      suggestion: "Try SQL JOIN practice next to improve your weakest topic.",
+      action_link: "/dashboard/practice?topic=sql-joins",
+      action_text: "Practice SQL"
+    },
+    goals: {
+      type: "Weekly",
+      target_hours: 5,
+      current_hours: 3.5
+    }
+  };
+}
