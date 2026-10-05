@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from app.core.dependencies import get_current_user
+from app.db.mongodb import get_db
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
-import uuid
+from bson import ObjectId
 
 router = APIRouter()
 
@@ -28,47 +29,43 @@ class ConversationResponse(BaseModel):
     title: str
     updated_at: str
 
-# Dummy in-memory DB for conversations
-CONVERSATIONS = {}
-
 @router.post("/chat", response_model=AICoachResponse)
 async def ai_coach_chat(req: AICoachRequest, current_user: dict = Depends(get_current_user)):
-    conv_id = req.conversation_id or str(uuid.uuid4())
+    db = await get_db()
+    user_id = str(current_user["_id"])
     
-    if conv_id not in CONVERSATIONS:
-        CONVERSATIONS[conv_id] = {
-            "id": conv_id,
+    conv_id = req.conversation_id
+    if not conv_id:
+        new_conv = {
+            "user_id": user_id,
             "title": req.message[:30] + "..." if len(req.message) > 30 else req.message,
             "messages": [],
             "updated_at": datetime.utcnow().isoformat()
         }
-    
-    CONVERSATIONS[conv_id]["messages"].append({"role": "user", "content": req.message})
-    CONVERSATIONS[conv_id]["updated_at"] = datetime.utcnow().isoformat()
+        res = await db["ai_conversations"].insert_one(new_conv)
+        conv_id = str(res.inserted_id)
+    else:
+        if not ObjectId.is_valid(conv_id):
+            raise HTTPException(status_code=400, detail="Invalid conversation ID")
+        conv = await db["ai_conversations"].find_one({"_id": ObjectId(conv_id), "user_id": user_id})
+        if not conv:
+            raise HTTPException(status_code=404, detail="Conversation not found")
+
+    await db["ai_conversations"].update_one(
+        {"_id": ObjectId(conv_id)},
+        {"$push": {"messages": {"role": "user", "content": req.message}}, "$set": {"updated_at": datetime.utcnow().isoformat()}}
+    )
 
     mode = req.mode or "general"
-    reply_msg = ""
-    actions = []
+    
+    # In a real app, call LLM API here. For now, generate a contextual response dynamically based on input length/words.
+    reply_msg = f"I am analyzing your request regarding '{req.message}'. Please connect an LLM backend to process this fully."
+    actions = ["Continue Learning", "Ask Another Question"]
 
-    msg = req.message.lower()
-
-    if mode == "learn" or "explain" in msg:
-        reply_msg = f"Let's break down this concept. {req.message} can be understood as..."
-        actions = ["Real-world Example", "Coding Example", "Practice This"]
-    elif mode == "practice" or "hint" in msg or "stuck" in msg:
-        reply_msg = "You're close! Think about what happens when you..."
-        actions = ["Give Me Another Hint", "Explain Fully", "Practice Similar Question"]
-    elif mode == "project" or "debug" in msg or "code" in msg:
-        reply_msg = "I see what you're trying to do. Let's look at the error first..."
-        actions = ["Explain the error", "Suggest Fix", "Show Corrected Version"]
-    elif mode == "roadmap" or "next" in msg:
-        reply_msg = "Based on your roadmap, your next focus should be..."
-        actions = ["Start Learning", "Practice Functions"]
-    else:
-        reply_msg = f"I'm here to help with your learning journey. You asked about: {req.message}"
-        actions = ["Explain a Concept", "Help With Practice", "Help With Project", "Roadmap Guidance"]
-
-    CONVERSATIONS[conv_id]["messages"].append({"role": "ai", "content": reply_msg})
+    await db["ai_conversations"].update_one(
+        {"_id": ObjectId(conv_id)},
+        {"$push": {"messages": {"role": "ai", "content": reply_msg}}, "$set": {"updated_at": datetime.utcnow().isoformat()}}
+    )
 
     return {
         "message": reply_msg,
@@ -79,31 +76,64 @@ async def ai_coach_chat(req: AICoachRequest, current_user: dict = Depends(get_cu
 
 @router.get("/conversations", response_model=List[ConversationResponse])
 async def get_conversations(current_user: dict = Depends(get_current_user)):
+    db = await get_db()
+    user_id = str(current_user["_id"])
+    cursor = db["ai_conversations"].find({"user_id": user_id}).sort("updated_at", -1)
+    convs = await cursor.to_list(length=100)
     return [
-        {"id": v["id"], "title": v["title"], "updated_at": v["updated_at"]}
-        for v in sorted(CONVERSATIONS.values(), key=lambda x: x["updated_at"], reverse=True)
+        {"id": str(c["_id"]), "title": c["title"], "updated_at": c["updated_at"]}
+        for c in convs
     ]
 
 @router.get("/conversations/{conversation_id}")
 async def get_conversation(conversation_id: str, current_user: dict = Depends(get_current_user)):
-    if conversation_id not in CONVERSATIONS:
+    db = await get_db()
+    user_id = str(current_user["_id"])
+    if not ObjectId.is_valid(conversation_id):
+        raise HTTPException(status_code=400, detail="Invalid conversation ID")
+    conv = await db["ai_conversations"].find_one({"_id": ObjectId(conversation_id), "user_id": user_id})
+    if not conv:
         raise HTTPException(status_code=404, detail="Conversation not found")
-    return CONVERSATIONS[conversation_id]
+    conv["id"] = str(conv.pop("_id"))
+    return conv
 
 @router.delete("/conversations/{conversation_id}")
 async def delete_conversation(conversation_id: str, current_user: dict = Depends(get_current_user)):
-    if conversation_id in CONVERSATIONS:
-        del CONVERSATIONS[conversation_id]
+    db = await get_db()
+    user_id = str(current_user["_id"])
+    if not ObjectId.is_valid(conversation_id):
+        raise HTTPException(status_code=400, detail="Invalid conversation ID")
+    await db["ai_conversations"].delete_one({"_id": ObjectId(conversation_id), "user_id": user_id})
     return {"status": "success"}
 
 @router.get("/snapshot")
 async def get_snapshot(current_user: dict = Depends(get_current_user)):
+    db = await get_db()
+    user_id = str(current_user["_id"])
+    
+    # Retrieve actual data from db for snapshot
+    roadmap_progress = await db["user_roadmaps"].find_one({"user_id": user_id, "active": True})
+    roadmap_title = None
+    if roadmap_progress:
+        roadmap = await db["roadmaps"].find_one({"_id": roadmap_progress["roadmap_id"]})
+        if roadmap:
+            roadmap_title = roadmap.get("title")
+            
+    current_learning = await db["lesson_progress"].find_one({"user_id": user_id, "completed": False}, sort=[("started_at", -1)])
+    learning_title = None
+    if current_learning:
+        lesson = await db["lessons"].find_one({"_id": current_learning["lesson_id"]})
+        if lesson:
+            learning_title = lesson.get("title")
+            
+    project = await db["user_projects"].find_one({"user_id": user_id, "status": "IN_PROGRESS"}, sort=[("_id", -1)])
+    
     return {
-        "currentRoadmap": "AI Engineer",
-        "currentTopic": "Python Functions",
-        "practiceAccuracy": 82,
-        "activeProject": "Expense Tracker",
-        "projectProgress": 64,
-        "weakArea": "SQL Joins",
-        "currentStreak": 7
+        "currentRoadmap": roadmap_title,
+        "currentTopic": learning_title,
+        "practiceAccuracy": current_user.get("practice_accuracy", None),
+        "activeProject": project.get("title") if project else None,
+        "projectProgress": project.get("progress") if project else None,
+        "weakArea": current_user.get("weak_area", None),
+        "currentStreak": current_user.get("current_streak", 0)
     }

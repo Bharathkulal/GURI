@@ -9,66 +9,12 @@ import {
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
-// Dummy data structured for real integration
-const RECENT_PRACTICE = {
-  concept: "Python Functions",
-  lastScore: 72,
-  remaining: 5,
-};
-
-const WEAK_AREAS = [
-  { concept: "Python OOP", score: 64 },
-  { concept: "SQL Joins", score: 52 },
-];
-
-const ROADMAP_MODULES = [
-  {
-    name: "Python Fundamentals",
-    topics: [
-      { name: "Variables", status: "learned" },
-      { name: "Data Types", status: "learned" },
-      { name: "Conditions", status: "learned" },
-      { name: "Loops", status: "learned" },
-      { name: "Functions", status: "current" },
-      { name: "OOP", status: "locked" },
-    ]
-  }
-];
-
-const HISTORY = [
-  { concept: "Python Functions", date: "Today", score: "8/10", percent: 80 },
-  { concept: "SQL Basics", date: "Yesterday", score: "7/10", percent: 70 },
-  { concept: "Python Loops", date: "Sep 30", score: "9/10", percent: 90 },
-];
-
-const DUMMY_QUESTIONS = [
-  {
-    id: 1,
-    type: "mcq",
-    question: "What is the purpose of the return statement in Python?",
-    options: [
-      "To print a value to the console",
-      "To send a value back from a function to the caller",
-      "To create a new function",
-      "To stop the Python execution immediately"
-    ],
-    correctAnswer: 1,
-    explanation: "A return statement is used to end the execution of the function call and 'returns' the result (value of the expression following the return keyword) to the caller."
-  },
-  {
-    id: 2,
-    type: "mcq",
-    question: "Which keyword is used to define a function in Python?",
-    options: [
-      "func",
-      "define",
-      "def",
-      "function"
-    ],
-    correctAnswer: 2,
-    explanation: "The 'def' keyword is used to define a function in Python."
-  }
-];
+// Initial state structures for real integration
+const RECENT_PRACTICE = null;
+const WEAK_AREAS: any[] = [];
+const ROADMAP_MODULES: any[] = [];
+const HISTORY: any[] = [];
+const QUESTIONS: any[] = [];
 
 export default function PracticeFlow() {
   const [step, setStep] = useState<'home' | 'choose' | 'setup' | 'session' | 'result' | 'review'>('home');
@@ -97,7 +43,7 @@ export default function PracticeFlow() {
   };
 
   const nextQuestion = () => {
-    if (currentQuestionIndex < DUMMY_QUESTIONS.length - 1) {
+    if (currentQuestionIndex < QUESTIONS.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setShowExplanation(false);
     } else {
@@ -112,114 +58,146 @@ export default function PracticeFlow() {
     setStep('session');
   };
 
-  const renderHome = () => (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      className="space-y-8"
-    >
-      <div className="flex flex-col md:flex-row gap-6">
-        {/* Continue Practice Card */}
-        <div className="flex-1 bg-neutral-900 border border-neutral-800 rounded-2xl p-6 relative overflow-hidden group hover:border-emerald-500/30 transition-all">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl -mr-10 -mt-10"></div>
-          <div className="flex justify-between items-start mb-6">
-            <div>
-              <h2 className="text-xl font-medium text-white mb-1">Continue Practice</h2>
-              <p className="text-neutral-400 text-sm">Pick up where you left off</p>
-            </div>
-            <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400">
-              <Play size={20} />
-            </div>
-          </div>
-          
-          <div className="bg-neutral-950 rounded-xl p-4 mb-6 border border-neutral-800/50">
-            <div className="flex justify-between items-center mb-2">
-              <span className="font-medium text-white">{RECENT_PRACTICE.concept}</span>
-              <span className="text-emerald-400 text-sm">{RECENT_PRACTICE.lastScore}%</span>
-            </div>
-            <p className="text-neutral-400 text-sm">{RECENT_PRACTICE.remaining} questions remaining</p>
-          </div>
-          
-          <button 
-            onClick={() => handleStartPractice(RECENT_PRACTICE.concept)}
-            className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white py-3 px-4 rounded-xl font-medium transition-all"
-          >
-            Continue <ArrowRight size={18} />
+  const renderHome = () => {
+    const hasData = RECENT_PRACTICE || WEAK_AREAS.length > 0 || HISTORY.length > 0;
+    
+    if (!hasData) {
+      return (
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          className="flex flex-col items-center justify-center py-20 text-center border border-dashed border-neutral-800 rounded-2xl"
+        >
+          <Target size={48} className="text-neutral-600 mb-6" />
+          <h2 className="text-xl font-medium text-white mb-2">No practice activity yet.</h2>
+          <p className="text-neutral-400 mb-8 max-w-md">Start practicing concepts from your roadmap to see your statistics and history here.</p>
+          <button onClick={() => setStep('choose')} className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2.5 rounded-xl font-medium transition-colors flex items-center gap-2">
+            <Play size={18} /> Start Practicing
           </button>
-        </div>
-
-        {/* Action Grid */}
-        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <button onClick={() => setStep('choose')} className="flex flex-col items-start text-left p-5 bg-neutral-900 border border-neutral-800 rounded-2xl hover:border-neutral-600 transition-all">
-            <BookOpen size={24} className="text-neutral-400 mb-4" />
-            <span className="font-medium text-white mb-1">Specific Concept</span>
-            <span className="text-xs text-neutral-400">Choose from your roadmap</span>
-          </button>
-          
-          <button onClick={() => handleStartPractice(WEAK_AREAS[0].concept)} className="flex flex-col items-start text-left p-5 bg-neutral-900 border border-neutral-800 rounded-2xl hover:border-rose-500/30 transition-all">
-            <Target size={24} className="text-rose-400 mb-4" />
-            <span className="font-medium text-white mb-1">Weak Areas</span>
-            <span className="text-xs text-neutral-400">Improve low scores</span>
-          </button>
-
-          <button onClick={() => handleStartPractice('Random')} className="flex flex-col items-start text-left p-5 bg-neutral-900 border border-neutral-800 rounded-2xl hover:border-neutral-600 transition-all">
-            <RefreshCw size={24} className="text-blue-400 mb-4" />
-            <span className="font-medium text-white mb-1">Random Practice</span>
-            <span className="text-xs text-neutral-400">Mixed concepts test</span>
-          </button>
-
-          <button onClick={() => handleStartPractice('Full Module')} className="flex flex-col items-start text-left p-5 bg-neutral-900 border border-neutral-800 rounded-2xl hover:border-neutral-600 transition-all">
-            <Brain size={24} className="text-purple-400 mb-4" />
-            <span className="font-medium text-white mb-1">Entire Module</span>
-            <span className="text-xs text-neutral-400">Comprehensive review</span>
-          </button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Weak Areas Section */}
-        <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
-          <h3 className="text-lg font-medium text-white mb-4">Your Weak Areas</h3>
-          <div className="space-y-3">
-            {WEAK_AREAS.map((area, i) => (
-              <div key={i} className="flex items-center justify-between p-3 bg-neutral-950 rounded-lg border border-neutral-800">
-                <span className="text-white">{area.concept}</span>
-                <div className="flex items-center gap-3">
-                  <span className="text-rose-400 text-sm font-medium">{area.score}%</span>
-                  <button 
-                    onClick={() => handleStartPractice(area.concept)}
-                    className="text-xs bg-neutral-800 hover:bg-neutral-700 text-white px-3 py-1.5 rounded-md transition-colors"
-                  >
-                    Practice
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* History Section */}
-        <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
-          <h3 className="text-lg font-medium text-white mb-4">Recent Sessions</h3>
-          <div className="space-y-3">
-            {HISTORY.map((item, i) => (
-              <div key={i} className="flex items-center justify-between p-3 border-b border-neutral-800 last:border-0 pb-3">
+        </motion.div>
+      );
+    }
+    
+    return (
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        className="space-y-8"
+      >
+        <div className="flex flex-col md:flex-row gap-6">
+          {/* Continue Practice Card */}
+          {RECENT_PRACTICE && (
+            <div className="flex-1 bg-neutral-900 border border-neutral-800 rounded-2xl p-6 relative overflow-hidden group hover:border-emerald-500/30 transition-all">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl -mr-10 -mt-10"></div>
+              <div className="flex justify-between items-start mb-6">
                 <div>
-                  <div className="text-white font-medium">{item.concept}</div>
-                  <div className="text-xs text-neutral-500 mt-1">{item.date}</div>
+                  <h2 className="text-xl font-medium text-white mb-1">Continue Practice</h2>
+                  <p className="text-neutral-400 text-sm">Pick up where you left off</p>
                 </div>
-                <div className="text-right">
-                  <div className="text-emerald-400 font-medium">{item.percent}%</div>
-                  <div className="text-xs text-neutral-500 mt-1">{item.score}</div>
+                <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400">
+                  <Play size={20} />
                 </div>
               </div>
-            ))}
+              
+              <div className="bg-neutral-950 rounded-xl p-4 mb-6 border border-neutral-800/50">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium text-white">{RECENT_PRACTICE.concept}</span>
+                  <span className="text-emerald-400 text-sm">{RECENT_PRACTICE.lastScore}%</span>
+                </div>
+                <p className="text-neutral-400 text-sm">{RECENT_PRACTICE.remaining} questions remaining</p>
+              </div>
+              
+              <button 
+                onClick={() => handleStartPractice(RECENT_PRACTICE.concept)}
+                className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white py-3 px-4 rounded-xl font-medium transition-all"
+              >
+                Continue <ArrowRight size={18} />
+              </button>
+            </div>
+          )}
+
+          {/* Action Grid */}
+          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <button onClick={() => setStep('choose')} className="flex flex-col items-start text-left p-5 bg-neutral-900 border border-neutral-800 rounded-2xl hover:border-neutral-600 transition-all">
+              <BookOpen size={24} className="text-neutral-400 mb-4" />
+              <span className="font-medium text-white mb-1">Specific Concept</span>
+              <span className="text-xs text-neutral-400">Choose from your roadmap</span>
+            </button>
+            
+            <button onClick={() => WEAK_AREAS.length > 0 && handleStartPractice(WEAK_AREAS[0].concept)} className="flex flex-col items-start text-left p-5 bg-neutral-900 border border-neutral-800 rounded-2xl hover:border-rose-500/30 transition-all">
+              <Target size={24} className="text-rose-400 mb-4" />
+              <span className="font-medium text-white mb-1">Weak Areas</span>
+              <span className="text-xs text-neutral-400">Improve low scores</span>
+            </button>
+
+            <button onClick={() => handleStartPractice('Random')} className="flex flex-col items-start text-left p-5 bg-neutral-900 border border-neutral-800 rounded-2xl hover:border-neutral-600 transition-all">
+              <RefreshCw size={24} className="text-blue-400 mb-4" />
+              <span className="font-medium text-white mb-1">Random Practice</span>
+              <span className="text-xs text-neutral-400">Mixed concepts test</span>
+            </button>
+
+            <button onClick={() => handleStartPractice('Full Module')} className="flex flex-col items-start text-left p-5 bg-neutral-900 border border-neutral-800 rounded-2xl hover:border-neutral-600 transition-all">
+              <Brain size={24} className="text-purple-400 mb-4" />
+              <span className="font-medium text-white mb-1">Entire Module</span>
+              <span className="text-xs text-neutral-400">Comprehensive review</span>
+            </button>
           </div>
         </div>
-      </div>
-    </motion.div>
-  );
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Weak Areas Section */}
+          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
+            <h3 className="text-lg font-medium text-white mb-4">Your Weak Areas</h3>
+            {WEAK_AREAS.length === 0 ? (
+              <div className="text-sm text-neutral-500">No weak areas identified yet.</div>
+            ) : (
+              <div className="space-y-3">
+                {WEAK_AREAS.map((area, i) => (
+                  <div key={i} className="flex items-center justify-between p-3 bg-neutral-950 rounded-lg border border-neutral-800">
+                    <span className="text-white">{area.concept}</span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-rose-400 text-sm font-medium">{area.score}%</span>
+                      <button 
+                        onClick={() => handleStartPractice(area.concept)}
+                        className="text-xs bg-neutral-800 hover:bg-neutral-700 text-white px-3 py-1.5 rounded-md transition-colors"
+                      >
+                        Practice
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* History Section */}
+          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
+            <h3 className="text-lg font-medium text-white mb-4">Recent Sessions</h3>
+            {HISTORY.length === 0 ? (
+              <div className="text-sm text-neutral-500">No recent sessions found.</div>
+            ) : (
+              <div className="space-y-3">
+                {HISTORY.map((item, i) => (
+                  <div key={i} className="flex items-center justify-between p-3 border-b border-neutral-800 last:border-0 pb-3">
+                    <div>
+                      <div className="text-white font-medium">{item.concept}</div>
+                      <div className="text-xs text-neutral-500 mt-1">{item.date}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-emerald-400 font-medium">{item.percent}%</div>
+                      <div className="text-xs text-neutral-500 mt-1">{item.score}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </motion.div>
+    );
+  };
 
   const renderChoose = () => (
     <motion.div
@@ -352,10 +330,10 @@ export default function PracticeFlow() {
   );
 
   const renderSession = () => {
-    const question = DUMMY_QUESTIONS[currentQuestionIndex];
+    const question = QUESTIONS[currentQuestionIndex];
     const isAnswered = answers[currentQuestionIndex] !== undefined;
     const isCorrect = answers[currentQuestionIndex] === question.correctAnswer;
-    const progress = ((currentQuestionIndex) / DUMMY_QUESTIONS.length) * 100;
+    const progress = ((currentQuestionIndex) / QUESTIONS.length) * 100;
 
     return (
       <div className="max-w-3xl mx-auto flex flex-col min-h-[70vh]">
@@ -364,7 +342,7 @@ export default function PracticeFlow() {
             Exit
           </button>
           <div className="text-neutral-400 text-sm font-medium">
-            Question {currentQuestionIndex + 1} of {DUMMY_QUESTIONS.length}
+            Question {currentQuestionIndex + 1} of {QUESTIONS.length}
           </div>
           <div className="flex items-center gap-2 text-neutral-400 text-sm">
             <Clock size={16} /> 04:20
@@ -374,8 +352,8 @@ export default function PracticeFlow() {
         <div className="w-full bg-neutral-900 h-1.5 rounded-full mb-10 overflow-hidden">
           <motion.div 
             className="h-full bg-emerald-500 rounded-full"
-            initial={{ width: `${((currentQuestionIndex) / DUMMY_QUESTIONS.length) * 100}%` }}
-            animate={{ width: `${((currentQuestionIndex + (isAnswered ? 1 : 0)) / DUMMY_QUESTIONS.length) * 100}%` }}
+            initial={{ width: `${((currentQuestionIndex) / QUESTIONS.length) * 100}%` }}
+            animate={{ width: `${((currentQuestionIndex + (isAnswered ? 1 : 0)) / QUESTIONS.length) * 100}%` }}
           />
         </div>
 
@@ -452,7 +430,7 @@ export default function PracticeFlow() {
                 : 'bg-neutral-800 text-neutral-500 cursor-not-allowed'
             }`}
           >
-            {currentQuestionIndex < DUMMY_QUESTIONS.length - 1 ? 'Next Question' : 'Finish Practice'}
+            {currentQuestionIndex < QUESTIONS.length - 1 ? 'Next Question' : 'Finish Practice'}
           </button>
         </div>
       </div>
@@ -460,8 +438,8 @@ export default function PracticeFlow() {
   };
 
   const renderResult = () => {
-    const correctCount = answers.filter((a, i) => a === DUMMY_QUESTIONS[i].correctAnswer).length;
-    const score = Math.round((correctCount / DUMMY_QUESTIONS.length) * 100);
+    const correctCount = answers.filter((a, i) => a === QUESTIONS[i].correctAnswer).length;
+    const score = Math.round((correctCount / QUESTIONS.length) * 100);
 
     return (
       <motion.div 
@@ -482,7 +460,7 @@ export default function PracticeFlow() {
             <div className="text-xs text-neutral-500 uppercase tracking-wider">Score</div>
           </div>
           <div className="bg-neutral-900 border border-neutral-800 p-5 rounded-2xl">
-            <div className="text-3xl font-medium text-white mb-1">{correctCount}/{DUMMY_QUESTIONS.length}</div>
+            <div className="text-3xl font-medium text-white mb-1">{correctCount}/{QUESTIONS.length}</div>
             <div className="text-xs text-neutral-500 uppercase tracking-wider">Correct</div>
           </div>
           <div className="bg-neutral-900 border border-neutral-800 p-5 rounded-2xl">
@@ -536,7 +514,7 @@ export default function PracticeFlow() {
       <h2 className="text-2xl font-serif text-white mb-6">Review Mistakes</h2>
       
       <div className="space-y-6">
-        {DUMMY_QUESTIONS.map((q, i) => {
+        {QUESTIONS.map((q, i) => {
           if (answers[i] === q.correctAnswer) return null;
           
           return (

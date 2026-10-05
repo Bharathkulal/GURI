@@ -1,146 +1,109 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from typing import List, Optional
-from datetime import datetime
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, Query, HTTPException
+from typing import Optional, List
 from app.core.dependencies import get_current_user
+from app.db.mongodb import get_db
+from bson import ObjectId
 
 router = APIRouter()
 
-class ProjectResponse(BaseModel):
-    id: str
-    title: str
-    description: str
-    category: str
-    difficulty: str
-    estimated_hours: str
-    skills: List[str]
-    concepts: List[str]
-    steps: int
-    icon: str
-
-class UserProjectProgress(BaseModel):
-    project_id: str
-    status: str
-    progress: int
-    current_step: int
-    total_steps: int
-    saved: bool
-
-# Dummy Database for Projects
-DUMMY_PROJECTS = [
-    {
-        "id": "p1",
-        "title": "Expense Tracker",
-        "description": "Build a simple application to manage daily expenses and visualize spending.",
-        "category": "Python",
-        "difficulty": "Beginner",
-        "estimated_hours": "4-6 hours",
-        "skills": ["Python", "Functions", "File Handling"],
-        "concepts": ["Variables", "Loops", "Conditions"],
-        "steps": 7,
-        "icon": "🐍"
-    },
-    {
-        "id": "p2",
-        "title": "Student Predictor",
-        "description": "A machine learning model to predict student performance based on historical data.",
-        "category": "AI / ML",
-        "difficulty": "Intermediate",
-        "estimated_hours": "8-12 hours",
-        "skills": ["Pandas", "Scikit-learn", "Classification"],
-        "concepts": ["Machine Learning", "Data Processing"],
-        "steps": 10,
-        "icon": "🤖"
-    },
-    {
-        "id": "p3",
-        "title": "Portfolio Website",
-        "description": "Create a responsive personal portfolio to showcase your skills and projects.",
-        "category": "Web Development",
-        "difficulty": "Beginner",
-        "estimated_hours": "3-5 hours",
-        "skills": ["HTML", "CSS", "Flexbox"],
-        "concepts": ["UI Design", "Responsiveness"],
-        "steps": 5,
-        "icon": "🌐"
-    }
-]
-
-DUMMY_USER_PROJECTS = {
-    "p1": {
-        "project_id": "p1",
-        "status": "IN_PROGRESS",
-        "progress": 72,
-        "current_step": 5,
-        "total_steps": 7,
-        "saved": False
-    },
-    "p2": {
-        "project_id": "p2",
-        "status": "SAVED",
-        "progress": 0,
-        "current_step": 0,
-        "total_steps": 10,
-        "saved": True
-    }
-}
-
-@router.get("/", response_model=List[ProjectResponse])
-async def get_all_projects(category: Optional[str] = None, difficulty: Optional[str] = None, q: Optional[str] = None):
-    results = DUMMY_PROJECTS
-    if category and category != 'All':
-        results = [p for p in results if p['category'] == category]
-    if difficulty and difficulty != 'All':
-        results = [p for p in results if p['difficulty'] == difficulty]
+@router.get("/")
+async def get_projects(
+    category: Optional[str] = None,
+    difficulty: Optional[str] = None,
+    q: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    db = await get_db()
+    query = {}
+    if category:
+        query["category"] = category
+    if difficulty:
+        query["difficulty"] = difficulty
     if q:
-        q = q.lower()
-        results = [p for p in results if q in p['title'].lower() or q in p['description'].lower() or any(q in s.lower() for s in p['skills'])]
-    return results
+        query["title"] = {"$regex": q, "$options": "i"}
+        
+    cursor = db["projects"].find(query)
+    projects = await cursor.to_list(length=100)
+    for p in projects:
+        p["id"] = str(p.pop("_id"))
+    return projects
 
-@router.get("/recommended", response_model=List[ProjectResponse])
+@router.get("/recommended")
 async def get_recommended_projects(current_user: dict = Depends(get_current_user)):
-    return [DUMMY_PROJECTS[0], DUMMY_PROJECTS[1]]
+    db = await get_db()
+    # Simple recommendation: just fetch latest 2 projects
+    cursor = db["projects"].find({}).sort("_id", -1).limit(2)
+    projects = await cursor.to_list(length=2)
+    for p in projects:
+        p["id"] = str(p.pop("_id"))
+    return projects
 
-@router.get("/my", response_model=List[UserProjectProgress])
+@router.get("/my")
 async def get_my_projects(current_user: dict = Depends(get_current_user)):
-    return list(DUMMY_USER_PROJECTS.values())
+    db = await get_db()
+    user_id = str(current_user["_id"])
+    cursor = db["user_projects"].find({"user_id": user_id})
+    user_projects = await cursor.to_list(length=100)
+    for p in user_projects:
+        p["id"] = str(p.pop("_id"))
+    return user_projects
 
 @router.post("/{project_id}/start")
 async def start_project(project_id: str, current_user: dict = Depends(get_current_user)):
-    if project_id not in [p['id'] for p in DUMMY_PROJECTS]:
-        raise HTTPException(status_code=404, detail="Project not found")
+    db = await get_db()
+    user_id = str(current_user["_id"])
     
-    if project_id not in DUMMY_USER_PROJECTS:
-        DUMMY_USER_PROJECTS[project_id] = {
+    if not ObjectId.is_valid(project_id):
+        raise HTTPException(status_code=400, detail="Invalid project ID")
+        
+    project = await db["projects"].find_one({"_id": ObjectId(project_id)})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+        
+    user_project = await db["user_projects"].find_one({"user_id": user_id, "project_id": project_id})
+    if not user_project:
+        new_user_project = {
+            "user_id": user_id,
             "project_id": project_id,
-            "status": "IN_PROGRESS",
+            "title": project["title"],
+            "difficulty": project["difficulty"],
+            "category": project["category"],
             "progress": 0,
-            "current_step": 1,
-            "total_steps": next(p['steps'] for p in DUMMY_PROJECTS if p['id'] == project_id),
+            "completed_steps": 0,
+            "total_steps": len(project.get("steps", [])),
+            "status": "IN_PROGRESS",
             "saved": False
         }
+        result = await db["user_projects"].insert_one(new_user_project)
+        new_user_project["id"] = str(result.inserted_id)
+        new_user_project.pop("_id")
+        return {"message": "Project started", "data": new_user_project}
     else:
-        DUMMY_USER_PROJECTS[project_id]["status"] = "IN_PROGRESS"
-
-    return {"message": "Project started", "data": DUMMY_USER_PROJECTS[project_id]}
+        user_project["id"] = str(user_project.pop("_id"))
+        return {"message": "Project already started", "data": user_project}
 
 @router.post("/{project_id}/save")
 async def save_project(project_id: str, current_user: dict = Depends(get_current_user)):
-    if project_id not in DUMMY_USER_PROJECTS:
-        DUMMY_USER_PROJECTS[project_id] = {
-            "project_id": project_id,
-            "status": "NOT_STARTED",
-            "progress": 0,
-            "current_step": 0,
-            "total_steps": next(p['steps'] for p in DUMMY_PROJECTS if p['id'] == project_id),
-            "saved": True
-        }
-    else:
-        DUMMY_USER_PROJECTS[project_id]["saved"] = True
+    db = await get_db()
+    user_id = str(current_user["_id"])
+    
+    if not ObjectId.is_valid(project_id):
+        raise HTTPException(status_code=400, detail="Invalid project ID")
+        
+    await db["user_projects"].update_one(
+        {"user_id": user_id, "project_id": project_id},
+        {"$set": {"saved": True}},
+        upsert=True
+    )
     return {"message": "Project saved"}
 
 @router.delete("/{project_id}/save")
 async def unsave_project(project_id: str, current_user: dict = Depends(get_current_user)):
-    if project_id in DUMMY_USER_PROJECTS:
-        DUMMY_USER_PROJECTS[project_id]["saved"] = False
-    return {"message": "Project unsaved"}
+    db = await get_db()
+    user_id = str(current_user["_id"])
+    
+    await db["user_projects"].update_one(
+        {"user_id": user_id, "project_id": project_id},
+        {"$set": {"saved": False}}
+    )
+    return {"message": "Project removed from saved"}
