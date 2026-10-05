@@ -229,3 +229,76 @@ export async function fetchProgress(token: string) {
     }
   };
 }
+
+export async function fetchCareer(token: string) {
+  try {
+    const res = await fetch(`${API_URL}/career`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (e) {
+    console.log("Mocking career data as endpoint failed/unavailable");
+  }
+
+  // Mock Data conforming to the Career UI requirements
+  return {
+    goal: {
+      target_role: "AI/ML Engineer",
+      description: "Develops machine learning models, neural networks, and AI systems.",
+      required_skills: ["Python", "Machine Learning", "Deep Learning", "SQL", "Mathematics"],
+      recommended_skills: ["Docker", "AWS/GCP", "MLOps"]
+    },
+    readiness: {
+      overall: 72,
+      breakdown: {
+        skills: 80,
+        projects: 65,
+        resume: 85,
+        interview: 58
+      }
+    },
+    roadmap: {
+      title: "AI Engineer Track",
+      items: [
+        { name: "Python", status: "completed" },
+        { name: "NumPy & Pandas", status: "completed" },
+        { name: "Machine Learning", status: "current" },
+        { name: "Deep Learning", status: "pending" },
+        { name: "NLP", status: "pending" },
+        { name: "Model Deployment", status: "pending" }
+      ]
+    },
+    skill_gap: [
+      { name: "Python", status: "Strong", action: "None" },
+      { name: "Pandas", status: "Strong", action: "None" },
+      { name: "Machine Learning", status: "Good", action: "None" },
+      { name: "SQL", status: "Needs Practice", action: "Practice" },
+      { name: "Deep Learning", status: "Missing", action: "Learn" },
+      { name: "Docker", status: "Missing", action: "Learn" }
+    ],
+    recommended_projects: [
+      { id: "3", title: "End-to-End ML Pipeline", difficulty: "Advanced", skills: ["Python", "MLOps", "Docker"] }
+    ],
+    resume: {
+      status: "Good",
+      completeness: 85,
+      ats_readiness: 78
+    },
+    opportunities: [], // Empty state to test "No opportunities available right now"
+    interview_prep: [
+      { type: "Technical", label: "Technical Interview" },
+      { type: "HR", label: "HR Interview" },
+      { type: "Coding", label: "Coding Interview" },
+      { type: "Mock", label: "Role-specific Mock" }
+    ],
+    insight: {
+      message: "You are progressing well toward AI/ML Engineering. Your next priority should be SQL and one deployment-focused project.",
+      actions: [
+        { label: "Learn SQL", href: "/dashboard/learn?q=sql" },
+        { label: "Practice SQL", href: "/dashboard/practice?topic=sql" }
+      ]
+    }
+  };
+}
