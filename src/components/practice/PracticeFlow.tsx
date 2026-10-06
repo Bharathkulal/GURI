@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 // Initial state structures for real integration
-const RECENT_PRACTICE = null;
+const RECENT_PRACTICE: any = null;
 const WEAK_AREAS: any[] = [];
 const ROADMAP_MODULES: any[] = [];
 const HISTORY: any[] = [];
@@ -219,7 +219,7 @@ export default function PracticeFlow() {
               <h3 className="font-medium text-white">{module.name}</h3>
             </div>
             <div className="p-2">
-              {module.topics.map((topic, j) => (
+              {module.topics.map((topic: any, j: number) => (
                 <button 
                   key={j}
                   onClick={() => topic.status !== 'locked' && handleStartPractice(topic.name)}
@@ -361,7 +361,7 @@ export default function PracticeFlow() {
           <h2 className="text-2xl text-white font-medium mb-8 leading-snug">{question.question}</h2>
           
           <div className="space-y-3">
-            {question.options.map((option, idx) => {
+            {question.options.map((option: any, idx: number) => {
               const isSelected = answers[currentQuestionIndex] === idx;
               const isOptionCorrect = idx === question.correctAnswer;
               
