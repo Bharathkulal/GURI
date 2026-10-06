@@ -286,7 +286,7 @@ function GoalsAndAchievements({ goals, achievements }: { goals: any, achievement
 async function ProgressContent({ session }: { session: any }) {
   let data = null;
   try {
-    data = await fetchProgress(session?.user?.email || "dev-token");
+    data = await fetchProgress(session?.backendToken as string);
   } catch (e) {
     console.error("Progress API failed", e);
   }

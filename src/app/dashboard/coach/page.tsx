@@ -9,7 +9,7 @@ export const metadata = {
 
 export default async function AICoachPage() {
   const session = await auth();
-  const token = session?.user?.email || "dev-token"; 
+  const token = session?.backendToken as string; 
   
   return (
     <div className="max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">

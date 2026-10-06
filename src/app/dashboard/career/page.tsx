@@ -302,7 +302,7 @@ function InterviewPreparation({ prep }: { prep: any[] }) {
 async function CareerContent({ session }: { session: any }) {
   let data = null;
   try {
-    data = await fetchCareer(session?.user?.email || "dev-token");
+    data = await fetchCareer(session?.backendToken as string);
   } catch (e) {
     console.error("Career API failed", e);
   }

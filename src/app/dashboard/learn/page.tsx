@@ -23,7 +23,7 @@ export default function LearnPage() {
 
   const loadContinueLearning = async () => {
     try {
-      const token = localStorage.getItem("token") || "";
+      const token = "" /* TODO: useSession() for token */;
       const data = await fetchContinueLearning(token);
       setContinueTopic(data);
     } catch (err) {

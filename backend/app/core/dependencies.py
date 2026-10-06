@@ -1,23 +1,45 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-import httpx
+import jwt
+import os
 from app.db.mongodb import get_db
 
 security = HTTPBearer()
 
+SHARED_SECRET = os.getenv("API_JWT_SECRET", "super-secret-default-key")
+ALGORITHM = "HS256"
+
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    # This should verify the token. 
-    # For now, we simulate checking the DB.
-    db = await get_db()
     token = credentials.credentials
-    
-    # In a real app, verify the token and extract auth_id
-    # We will just fetch a test user for development if no token logic is implemented
-    user = await db["users"].find_one({})
-    
-    if not user:
+    try:
+        payload = jwt.decode(token, SHARED_SECRET, algorithms=[ALGORITHM])
+        email: str = payload.get("sub")
+        if email is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid authentication credentials (missing sub)",
+            )
+    except jwt.PyJWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
+            detail="Could not validate credentials",
         )
+    
+    db = await get_db()
+    # Find user by email, or create a mock/placeholder if we want for now?
+    # No, we must reject if user doesn't exist, but maybe we can upsert from JWT 
+    # to support OAuth providers without manual registration in backend.
+    user = await db["users"].find_one({"email": email})
+    
+    if not user:
+        # Auto-create user from JWT info for seamless OAuth
+        new_user = {
+            "email": email,
+            "name": payload.get("name", "Unknown User"),
+            "provider_id": payload.get("id"),
+            "role": "user"
+        }
+        await db["users"].insert_one(new_user)
+        user = await db["users"].find_one({"email": email})
+        
     return user

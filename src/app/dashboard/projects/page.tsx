@@ -9,7 +9,7 @@ export const metadata = {
 
 export default async function ProjectsPage() {
   const session = await auth();
-  const token = session?.user?.email || "dev-token"; // Using email as a mock token for local testing based on dashboard.tsx
+  const token = session?.backendToken as string; // Using email as a mock token for local testing based on dashboard.tsx
   
   return (
     <div className="max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">

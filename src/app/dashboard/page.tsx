@@ -30,7 +30,7 @@ function SectionError({ message }: { message: string }) {
 async function DashboardContent({ session }: { session: any }) {
   let data = null;
   try {
-    data = await fetchDashboard(session?.user?.email || "dev-token");
+    data = await fetchDashboard(session?.backendToken as string);
   } catch (e) {
     // If the entire dashboard API fails, we throw to the nearest error boundary
     // But since we want partial loading, ideally the API would be split into smaller endpoints.
