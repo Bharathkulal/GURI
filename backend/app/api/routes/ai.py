@@ -58,21 +58,10 @@ async def ai_coach_chat(req: AICoachRequest, current_user: dict = Depends(get_cu
 
     mode = req.mode or "general"
     
-    # In a real app, call LLM API here. For now, generate a contextual response dynamically based on input length/words.
-    reply_msg = f"I am analyzing your request regarding '{req.message}'. Please connect an LLM backend to process this fully."
-    actions = ["Continue Learning", "Ask Another Question"]
+    raise HTTPException(status_code=501, detail="BLOCKED — AI PROVIDER CONFIGURATION REQUIRED")
 
-    await db["ai_conversations"].update_one(
-        {"_id": ObjectId(conv_id)},
-        {"$push": {"messages": {"role": "ai", "content": reply_msg}}, "$set": {"updated_at": datetime.utcnow().isoformat()}}
-    )
-
-    return {
-        "message": reply_msg,
-        "mode": mode,
-        "suggested_actions": actions,
-        "conversation_id": conv_id
-    }
+    # The following code is unreachable and was part of the stub implementation
+    # It has been removed to avoid reference before assignment errors.
 
 @router.get("/conversations", response_model=List[ConversationResponse])
 async def get_conversations(current_user: dict = Depends(get_current_user)):
