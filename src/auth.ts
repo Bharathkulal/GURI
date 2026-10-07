@@ -23,10 +23,24 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        // Mock authorization for development. 
-        // In real app, this should verify against backend API.
-        if (credentials?.email && credentials?.password) {
-          return { id: "1", name: "Test User", email: credentials.email as string };
+        if (!credentials?.email || !credentials?.password) return null;
+        
+        try {
+          const res = await fetch("http://localhost:8000/api/v1/auth/login", {
+            method: 'POST',
+            body: JSON.stringify({
+              email: credentials.email,
+              password: credentials.password
+            }),
+            headers: { "Content-Type": "application/json" }
+          });
+          
+          if (res.ok) {
+            const user = await res.json();
+            return { id: user.id, name: user.name, email: user.email };
+          }
+        } catch (e) {
+          console.error("Auth error:", e);
         }
         return null;
       }

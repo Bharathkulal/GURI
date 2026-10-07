@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { fetchTopicLessons, completeLesson } from "@/services/api";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import { CheckCircle2, ArrowRight } from "lucide-react";
 import ReactMarkdown from "react-markdown";
@@ -16,14 +17,16 @@ export default function LessonPage() {
   const [loading, setLoading] = useState(true);
   const [completing, setCompleting] = useState(false);
 
+  const { data: session } = useSession();
+
   useEffect(() => {
-    loadLesson();
-  }, [topicId, lessonId]);
+    if (session) loadLesson();
+  }, [topicId, lessonId, session]);
 
   const loadLesson = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("token") || ""; 
+      const token = (session?.backendToken as string) || ""; 
       const lData = await fetchTopicLessons(topicId as string, token);
       setLessons(lData);
       const current = lData.find((l: any) => l.id === lessonId);
@@ -38,7 +41,7 @@ export default function LessonPage() {
   const handleComplete = async () => {
     try {
       setCompleting(true);
-      const token = localStorage.getItem("token") || ""; 
+      const token = (session?.backendToken as string) || ""; 
       await completeLesson(lessonId as string, token);
       
       // Find next lesson

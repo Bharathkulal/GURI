@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { fetchTopics, fetchContinueLearning } from "@/services/api";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import { Play } from "lucide-react";
 
@@ -16,14 +17,18 @@ export default function LearnPage() {
   
   const categories = ["All", "Programming", "AI / ML", "Data", "Web Development", "Database", "Computer Science", "Tools", "Career"];
 
+  const { data: session } = useSession();
+
   useEffect(() => {
-    loadTopics();
-    loadContinueLearning();
-  }, []);
+    if (session) {
+      loadTopics();
+      loadContinueLearning();
+    }
+  }, [session]);
 
   const loadContinueLearning = async () => {
     try {
-      const token = "" /* TODO: useSession() for token */;
+      const token = (session?.backendToken as string) || "";
       const data = await fetchContinueLearning(token);
       setContinueTopic(data);
     } catch (err) {

@@ -32,11 +32,19 @@ export default function LoginPage() {
 
     setLoading(true);
 
-    // Simulate API call for now (replace with actual credentials auth later)
-    setTimeout(() => {
-      setLoading(false);
+    const result = await signIn("credentials", {
+      redirect: false,
+      email,
+      password,
+    });
+
+    setLoading(false);
+
+    if (result?.error) {
       setError("Invalid email or password.");
-    }, 1500);
+    } else {
+      router.push("/dashboard");
+    }
   };
 
   const handleOAuthLogin = (provider: 'google' | 'github') => {

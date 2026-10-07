@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { fetchTopic, fetchTopicLessons, startTopic } from "@/services/api";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import { CheckCircle2, Circle, Clock } from "lucide-react";
 
@@ -14,15 +15,16 @@ export default function TopicPage() {
   const [lessons, setLessons] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const { data: session } = useSession();
+
   useEffect(() => {
-    loadData();
-  }, [topicId]);
+    if (session) loadData();
+  }, [topicId, session]);
 
   const loadData = async () => {
     try {
       setLoading(true);
-      // In a real app we'd get the token from a context or storage
-      const token = localStorage.getItem("token") || ""; 
+      const token = (session?.backendToken as string) || ""; 
       const [tData, lData] = await Promise.all([
         fetchTopic(topicId as string, token),
         fetchTopicLessons(topicId as string, token)
