@@ -53,13 +53,18 @@ async def get_dashboard(current_user: dict = Depends(get_current_user)):
         ai_recommendation.pop("_id", None)
         ai_recommendation.pop("user_id", None)
     
+    # Map to frontend expectations
     return {
         "user": current_user,
-        "career_goal": career_goal,
+        "career_goal": {"name": career_goal} if isinstance(career_goal, str) else career_goal,
         "roadmap": roadmap_data,
         "current_learning": learning_data,
-        "today_plan": today_plan,
-        "skills": skills,
-        "projects": projects_data,
-        "ai_recommendation": ai_recommendation
+        "stats": {
+            "streak": current_user.get("current_streak", 0),
+            "completed_lessons": current_user.get("completed_lessons", 0),
+            "projects_done": current_user.get("projects_done", 0),
+            "xp": current_user.get("xp", 0)
+        },
+        "recommendations": projects_data if projects_data else [],
+        "recent_activity": today_plan if today_plan else []
     }
